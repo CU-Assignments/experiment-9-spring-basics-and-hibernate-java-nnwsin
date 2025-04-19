@@ -1,0 +1,91 @@
+package com.example.entity;
+
+import javax.persistence.*;
+
+@Entity
+@Table(name = "students")
+public class Student {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    private String name;
+    private int age;
+
+    public Student() {}
+
+    public Student(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    // Getters, Setters, toString()
+}
+
+
+<!DOCTYPE hibernate-configuration PUBLIC
+ "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+ "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/javaexp8</property>
+        <property name="hibernate.connection.username">Root</property>
+        <property name="hibernate.connection.password">Greentea911@</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
+        <property name="show_sql">true</property>
+        <property name="hbm2ddl.auto">update</property>
+
+        <mapping class="com.example.entity.Student"/>
+    </session-factory>
+</hibernate-configuration>
+
+
+
+package com.example;
+
+import com.example.entity.Student;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+public class MainApp {
+    public static void main(String[] args) {
+        SessionFactory factory = new Configuration()
+                .configure("hibernate.cfg.xml")
+                .addAnnotatedClass(Student.class)
+                .buildSessionFactory();
+
+        Session session = factory.getCurrentSession();
+
+        try {
+            // CREATE
+            Student student = new Student("Rohit", 22);
+            session.beginTransaction();
+            session.save(student);
+            session.getTransaction().commit();
+
+            // READ
+            session = factory.getCurrentSession();
+            session.beginTransaction();
+            Student fetched = session.get(Student.class, student.getId());
+            System.out.println("Fetched: " + fetched);
+            session.getTransaction().commit();
+
+            // UPDATE
+            session = factory.getCurrentSession();
+            session.beginTransaction();
+            fetched.setAge(23);
+            session.update(fetched);
+            session.getTransaction().commit();
+
+            // DELETE
+            session = factory.getCurrentSession();
+            session.beginTransaction();
+            session.delete(fetched);
+            session.getTransaction().commit();
+        } finally {
+            factory.close();
+        }
+    }
+}
